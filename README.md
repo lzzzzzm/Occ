@@ -14,3 +14,30 @@
 <img src="./figs/occupanc_1.gif" width="696px">
 
 </div>
+
+## Getting start！
+
+### 1、Prepare dataset
+
+organize as following 
+
+```python
+Occupancy3D
+├── projects/
+├── tools/
+├── ckpts/
+│   ├── r101_dcn_fcos3d_pretrain.pth
+├── data/
+│   ├── can_bus/
+│   ├── occ3d-nus/
+│   │   ├── maps/
+│   │   ├── samples/     # You can download our imgs.tar.gz or using the original sample files of the nuScenes dataset
+│   │   ├── v1.0-trainval/
+│   │   ├── gts/
+│   │   │── annotations.json
+```
+### 2、Generate the `info` files for training and validation
+
+```python
+python tools/create_data.py occ --root-path ./data/occ3d-nus --out-dir ./data/occ3d-nus --extra-tag occ --version v1.0-trainval --canbus ./data --occ-path ./data/occ3d-nus
+```
