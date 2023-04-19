@@ -58,7 +58,8 @@ def create_nuscenes_occ_infos(root_path,
     available_vers = ['v1.0-trainval', 'v1.0-test', 'v1.0-mini']
     assert version in available_vers
 
-    with open(os.path.join(occ_path,'annotations.json'),'r') as f:
+    json_path = os.path.join(occ_path, 'annotations.json')
+    with open(json_path,'r') as f:
         occ_anno = json.load(f)
 
     if version == 'v1.0-trainval':

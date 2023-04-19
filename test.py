@@ -27,8 +27,8 @@ import os.path as osp
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDet test (and eval) a model')
-    parser.add_argument('config', help='test config file path')
-    parser.add_argument('checkpoint', help='checkpoint file')
+    parser.add_argument('--config', default='projects/configs/bevformer/bevformer_base_occ_single.py',help='test config file path')
+    parser.add_argument('--checkpoint', default='checkpoint/epoch_24.pth',help='checkpoint file')
     parser.add_argument('--out', help='output result file in pickle format')
     parser.add_argument(
         '--eval_fscore',
@@ -47,13 +47,14 @@ def parse_args():
         'submit it to the test server')
     parser.add_argument(
         '--eval',
+        default='bbox',
         type=str,
         nargs='+',
         help='evaluation metrics, which depends on the dataset, e.g., "bbox",'
         ' "segm", "proposal" for COCO, and "mAP", "recall" for PASCAL VOC')
     parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument(
-        '--show-dir', help='directory where results will be saved')
+        '--show-dir', default='show_dir',help='directory where results will be saved')
     parser.add_argument(
         '--gpu-collect',
         action='store_true',
@@ -198,7 +199,7 @@ def main():
         dataset,
         samples_per_gpu=samples_per_gpu,
         workers_per_gpu=cfg.data.workers_per_gpu,
-        dist=distributed,
+        dist=False,
         shuffle=False,
         nonshuffler_sampler=cfg.data.nonshuffler_sampler,
     )
@@ -227,7 +228,7 @@ def main():
 
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])
-        outputs = custom_single_gpu_test(model, data_loader, args.show, args.show_dir)
+        outputs = custom_single_gpu_test(model, data_loader, args.tmpdir, args.gpu_collect)
     else:
         model = MMDistributedDataParallel(
             model.cuda(),
