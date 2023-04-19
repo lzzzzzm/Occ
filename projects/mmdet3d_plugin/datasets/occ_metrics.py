@@ -1,17 +1,12 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import os
-from pathlib import Path
-from tqdm import tqdm
-import pickle as pkl
-import argparse
-import time
-import torch
-import sys, platform
 from sklearn.neighbors import KDTree
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 from termcolor import colored
-from pathlib import Path
-from copy import deepcopy
 from functools import reduce
+
 
 np.seterr(divide='ignore', invalid='ignore')
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -73,7 +68,9 @@ class Metric_mIoU():
         self.occ_zdim = int((self.point_cloud_range[5] - self.point_cloud_range[2]) / self.occupancy_size[2])
         self.voxel_num = self.occ_xdim * self.occ_ydim * self.occ_zdim
         self.hist = np.zeros((self.num_classes, self.num_classes))
+        self.cm = np.zeros(shape=(self.num_classes, self.num_classes))
         self.cnt = 0
+
 
     def hist_info(self, n_cl, pred, gt):
         """
@@ -91,6 +88,8 @@ class Metric_mIoU():
             tuple:(hist, correctly number_predicted_labels, num_labelled_sample)
         """
         assert pred.shape == gt.shape
+        cm = confusion_matrix(gt, pred, labels=np.arange(0, self.num_classes))
+        self.cm += cm
         k = (gt >= 0) & (gt < n_cl)  # exclude 255
         labeled = np.sum(k)
         correct = np.sum((pred[k] == gt[k]))
@@ -104,7 +103,6 @@ class Metric_mIoU():
         )
 
     def per_class_iu(self, hist):
-
         return np.diag(hist) / (hist.sum(1) + hist.sum(0) - np.diag(hist))
 
     def compute_mIoU(self, pred, label, n_classes):
@@ -145,6 +143,12 @@ class Metric_mIoU():
         # print(f'===> sample-wise averaged mIoU of {cnt} samples: ' + str(round(np.nanmean(mIoU_avg), 2)))
 
         # return mIoU
+
+    def save_confusion_matirx(self, save_path):
+        plt.figure(figsize=(12, 12))
+        sns.heatmap(self.cm, annot=True, xticklabels=self.class_names, yticklabels=self.class_names, cmap="YlGnBu")
+        plt.title('Confusion matrix')
+        plt.savefig(os.path.join(save_path, 'confusion matrix.png'))
 
 
 class Metric_FScore():

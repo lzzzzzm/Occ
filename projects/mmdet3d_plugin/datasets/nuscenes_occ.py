@@ -5,6 +5,7 @@ from tqdm import tqdm
 from mmdet.datasets import DATASETS
 from mmdet3d.datasets import NuScenesDataset
 import mmcv
+import cv2
 from os import path as osp
 from mmdet.datasets import DATASETS
 import torch
@@ -67,6 +68,13 @@ class NuSceneOcc(NuScenesDataset):
         for i in index_list:
             i = max(0, i)
             input_dict = self.get_data_info(i)
+            # img_filename = input_dict['img_filename']
+            # for filename in img_filename:
+            #     print(filename)
+            # for filename in img_filename:
+            #     img = cv2.imread(filename)
+            #     print(img.shape)
+
             if input_dict is None:
                 return None
             self.pre_pipeline(input_dict)
@@ -252,6 +260,7 @@ class NuSceneOcc(NuScenesDataset):
                 self.fscore_eval_metrics.add_batch(occ_pred, gt_semantics, mask_lidar, mask_camera)
 
         self.occ_eval_metrics.count_miou()
+        self.occ_eval_metrics.save_confusion_matirx(show_dir)
         if self.eval_fscore:
             self.fscore_eval_metrics.count_fscore()
 
