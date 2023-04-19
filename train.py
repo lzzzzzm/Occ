@@ -246,31 +246,6 @@ def main():
             if hasattr(datasets[0], 'PALETTE') else None)
     # add an attribute for visualization convenience
     model.CLASSES = datasets[0].CLASSES
-    data_loaders = [
-        build_dataloader(
-            ds,
-            cfg.data.samples_per_gpu,
-            cfg.data.workers_per_gpu,
-            # cfg.gpus will be ignored if distributed
-            len(cfg.gpu_ids),
-            dist=distributed,
-            seed=cfg.seed,
-            shuffler_sampler=cfg.data.shuffler_sampler,  # dict(type='DistributedGroupSampler'),
-            nonshuffler_sampler=cfg.data.nonshuffler_sampler,  # dict(type='DistributedSampler'),
-        ) for ds in datasets
-    ]
-    # print(len(datasets))
-    # print(len(data_loaders))
-    # train_dataloder = data_loaders[0]
-    # val_dataloder = data_loaders[1]
-    # # for data in datasets[0]:
-    # #     imgs = data['img']
-    # #     for img in imgs.data:
-    # #         print(img.shape)
-    # #     print('---------')
-    #
-    # for index, data in enumerate(train_dataloder):
-    #     print(index)
     custom_train_model(
         model,
         datasets,
