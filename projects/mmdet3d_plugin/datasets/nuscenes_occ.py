@@ -260,7 +260,8 @@ class NuSceneOcc(NuScenesDataset):
                 self.fscore_eval_metrics.add_batch(occ_pred, gt_semantics, mask_lidar, mask_camera)
 
         self.occ_eval_metrics.count_miou()
-        self.occ_eval_metrics.save_confusion_matirx(show_dir)
+        if show_dir is not None:
+            self.occ_eval_metrics.save_confusion_matirx(show_dir)
         if self.eval_fscore:
             self.fscore_eval_metrics.count_fscore()
 
