@@ -6,7 +6,7 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 from termcolor import colored
 from functools import reduce
-
+from mmdet.utils import get_root_logger
 
 np.seterr(divide='ignore', invalid='ignore')
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -50,6 +50,7 @@ class Metric_mIoU():
                  num_classes=18,
                  use_lidar_mask=False,
                  use_image_mask=False,
+                 runner=None,
                  ):
         self.class_names = ['others','barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
                             'motorcycle', 'pedestrian', 'traffic_cone', 'trailer', 'truck',
@@ -70,6 +71,10 @@ class Metric_mIoU():
         self.hist = np.zeros((self.num_classes, self.num_classes))
         self.cm = np.zeros(shape=(self.num_classes, self.num_classes))
         self.cnt = 0
+        if runner is not None:
+            self.logger = get_root_logger(log_file=runner.work_dir)
+        else:
+            self.logger = None
 
 
     def hist_info(self, n_cl, pred, gt):
@@ -135,14 +140,19 @@ class Metric_mIoU():
     def count_miou(self):
         mIoU = self.per_class_iu(self.hist)
         # assert cnt == num_samples, 'some samples are not included in the miou calculation'
-        print(f'===> per class IoU of {self.cnt} samples:')
-        for ind_class in range(self.num_classes-1):
-            print(f'===> {self.class_names[ind_class]} - IoU = ' + str(round(mIoU[ind_class] * 100, 2)))
-
-        print(f'===> mIoU of {self.cnt} samples: ' + str(round(np.nanmean(mIoU[:self.num_classes-1]) * 100, 2)))
+        if self.logger:
+            self.logger.info(f'===> per class IoU of {self.cnt} samples:')
+            for ind_class in range(self.num_classes - 1):
+                self.logger.info(f'===> {self.class_names[ind_class]} - IoU = ' + str(round(mIoU[ind_class] * 100, 2)))
+            self.logger.info(f'===> mIoU of {self.cnt} samples: ' + str(round(np.nanmean(mIoU[:self.num_classes-1]) * 100, 2)))
+        else:
+            print(f'===> per class IoU of {self.cnt} samples:')
+            for ind_class in range(self.num_classes-1):
+                print(f'===> {self.class_names[ind_class]} - IoU = ' + str(round(mIoU[ind_class] * 100, 2)))
+            print(f'===> mIoU of {self.cnt} samples: ' + str(round(np.nanmean(mIoU[:self.num_classes-1]) * 100, 2)))
         # print(f'===> sample-wise averaged mIoU of {cnt} samples: ' + str(round(np.nanmean(mIoU_avg), 2)))
 
-        # return mIoU
+        return mIoU
 
     def save_confusion_matirx(self, save_path):
         plt.figure(figsize=(12, 12))

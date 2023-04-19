@@ -1,18 +1,13 @@
 import copy
 import os
-import numpy as np
 from tqdm import tqdm
-from mmdet.datasets import DATASETS
 from mmdet3d.datasets import NuScenesDataset
 import mmcv
 import cv2
-from os import path as osp
 from mmdet.datasets import DATASETS
 import torch
 import numpy as np
 from nuscenes.eval.common.utils import quaternion_yaw, Quaternion
-from .nuscnes_eval import NuScenesEval_custom
-from projects.mmdet3d_plugin.models.utils.visual import save_tensor
 from mmcv.parallel import DataContainer as DC
 import random
 from nuscenes.utils.geometry_utils import transform_matrix
@@ -222,7 +217,8 @@ class NuSceneOcc(NuScenesDataset):
         self.occ_eval_metrics = Metric_mIoU(
             num_classes=18,
             use_lidar_mask=False,
-            use_image_mask=True)
+            use_image_mask=True,
+            runner=runner)
         if self.eval_fscore:
             self.fscore_eval_metrics = Metric_FScore(
                 leaf_size=10,
