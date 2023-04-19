@@ -6,8 +6,6 @@ from mmcv.parallel import DataContainer as DC
 import os
 
 
-
-
 @PIPELINES.register_module()
 class PadMultiViewImage(object):
     """Pad the multi-view image.
@@ -61,6 +59,34 @@ class PadMultiViewImage(object):
         repr_str += f'pad_val={self.pad_val})'
         return repr_str
 
+
+@PIPELINES.register_module()
+class ResizeMultiViewImage(object):
+    """Pad the multi-view image.
+    There are two padding modes: (1) pad to a fixed size and (2) pad to the
+    minimum size that is divisible by some number.
+    Added keys are "pad_shape", "pad_fixed_size", "pad_size_divisor",
+    Args:
+        size (tuple, optional): Fixed padding size.
+        size_divisor (int, optional): The divisor of padded size.
+        pad_val (float, optional): Padding value, 0 by default.
+    """
+
+    def __init__(self, size=None):
+        self.size = size
+
+    def __call__(self, results):
+        """Call function to pad images, masks, semantic segmentation maps.
+        Args:
+            results (dict): Result dict from loading pipeline.
+        Returns:
+            dict: Updated result dict.
+        """
+        resize_img = [mmcv.imresize(
+            img, size=self.size) for img in results['img']]
+        results['img'] = resize_img
+        results['img_shape'] = [img.shape for img in resize_img]
+        return results
 
 @PIPELINES.register_module()
 class NormalizeMultiviewImage(object):
